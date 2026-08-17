@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#include "twilight_ble.h"
+
 constexpr uint8_t kLightSensorPin = 4;
 constexpr uint8_t kRelayPin = 6;
 
@@ -37,6 +39,8 @@ void setup() {
 
     digitalWrite(kRelayPin, LOW);
     pinMode(kRelayPin, OUTPUT);
+
+    TwilightBle::begin();
 }
 
 void loop() {
