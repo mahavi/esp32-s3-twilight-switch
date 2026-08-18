@@ -5,14 +5,13 @@
 constexpr uint8_t kLightSensorPin = 4;
 constexpr uint8_t kRelayPin = 6;
 
-constexpr uint16_t kDarkThreshold = 1500;
-constexpr uint16_t kLightThreshold = 3500;
+constexpr TwilightBle::Thresholds kDefaultThresholds = {1500, 3500};
 
 constexpr uint32_t kSampleIntervalMs = 100;
 
 bool relayIsOn = false;
 
-static_assert(kDarkThreshold < kLightThreshold);
+static_assert(kDefaultThresholds.dark < kDefaultThresholds.light);
 
 void setRelay(bool turnOn) {
     if (relayIsOn == turnOn) {
@@ -25,9 +24,11 @@ void setRelay(bool turnOn) {
 }
 
 void updateRelay(uint16_t adcValue) {
-    if (adcValue < kDarkThreshold) {
+    const TwilightBle::Thresholds thresholds = TwilightBle::thresholds();
+
+    if (adcValue < thresholds.dark) {
         setRelay(true);
-    } else if (adcValue > kLightThreshold) {
+    } else if (adcValue > thresholds.light) {
         setRelay(false);
     }
 }
@@ -40,13 +41,13 @@ void setup() {
     digitalWrite(kRelayPin, LOW);
     pinMode(kRelayPin, OUTPUT);
 
-    TwilightBle::begin();
+    TwilightBle::begin(kDefaultThresholds);
 }
 
 void loop() {
     const uint16_t adcValue = analogRead(kLightSensorPin);
 
-    Serial.printf("ADC: %u\n", adcValue);
+    // Serial.printf("ADC: %u\n", adcValue);
     updateRelay(adcValue);
 
     delay(kSampleIntervalMs);
