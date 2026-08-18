@@ -20,10 +20,22 @@ void setRelay(bool turnOn) {
 
     relayIsOn = turnOn;
     digitalWrite(kRelayPin, turnOn ? HIGH : LOW);
+    TwilightBle::updateRelayState(turnOn);
     Serial.printf("Relay %s\n", turnOn ? "ON" : "OFF");
 }
 
 void updateRelay(uint16_t adcValue) {
+    switch (TwilightBle::relayMode()) {
+        case TwilightBle::RelayMode::on:
+            setRelay(true);
+            return;
+        case TwilightBle::RelayMode::off:
+            setRelay(false);
+            return;
+        case TwilightBle::RelayMode::automatic:
+            break;
+    }
+
     const TwilightBle::Thresholds thresholds = TwilightBle::thresholds();
 
     if (adcValue < thresholds.dark) {
@@ -47,7 +59,7 @@ void setup() {
 void loop() {
     const uint16_t adcValue = analogRead(kLightSensorPin);
 
-    // Serial.printf("ADC: %u\n", adcValue);
+    Serial.printf("ADC: %u\n", adcValue);
     updateRelay(adcValue);
 
     delay(kSampleIntervalMs);
